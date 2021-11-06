@@ -354,7 +354,7 @@ addnode=h2vlpudzphzqxutd.onion
 
 
 
-# Install Spectre Desktop ("A specter is haunting the modern world, the specter of crypto anarchy."The Crypto Anarchist Manifesto - Timothy C. May - Sun, 22 Nov 92 12:11:24 PST)
+# Install Spectre Desktop
 
 ```
 $ sudo apt install libusb-1.0-0-dev libudev-dev python3-dev
@@ -860,15 +860,6 @@ as well install and configure the Whirpool CLI.
 ```
 $ java
 ```
-
-Command 'java' not found, but can be installed with:
-
-sudo apt install openjdk-11-jre-headless  # version 11.0.11+9-0ubuntu2~20.04, or
-sudo apt install default-jre              # version 2:1.11-72
-sudo apt install openjdk-13-jre-headless  # version 13.0.7+5-0ubuntu1~20.04
-sudo apt install openjdk-16-jre-headless  # version 16.0.1+9-1~20.04
-sudo apt install openjdk-17-jre-headless  # version 17+35-1~20.04
-sudo apt install openjdk-8-jre-headless   # version 8u292-b10-0ubuntu1~20.04
 
 ```bash
 $ sudo apt install openjdk-17-jre-headles
