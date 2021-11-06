@@ -4,8 +4,7 @@ Run a BTC full node for fun and profit
 # Some cosideration
 1) We are going to use VPN over TOR, you will need a good VPN, pickup a good one. Consider to activate a killswitch. 
 
-NOTE: Before start the installation process and the first run, consider to set up your vpn first
-
+Before start the installation process and the first run, consider to set up your vpn first
 
 2) We will need space, I've addded a 2TB SSD afterwards and re-mounted my /home FS on a new Logical Volume on a dedicated (a bit slower drive)
 
