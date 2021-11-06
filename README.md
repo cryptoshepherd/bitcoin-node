@@ -1,14 +1,9 @@
 # Bitcoin-FullNode
 Run a BTC full node for fun and profit
 
-# Some cosideration
-1) We are going to use VPN over TOR, you will need a good VPN, pickup a good one. Consider to activate a killswitch. 
 
-> Note: Before start the installation process and the first run, consider to set up your vpn first
-
-2) We will need space, I've addded a 2TB SSD afterwards and re-mounted my /home FS on a new Logical Volume on a dedicated (a bit slower drive)
-
-3) Consider to install the OS on a SSD drive, and split your /home or whatever on a separate drive, using a non SSD drive as primary or store your blocks on the same drive might rsults in a much slower system.
+A Huge thanks to Ministry of Nodes and his precious video tutorial. What you will find here is nothing but an updated 
+step by step guide to that video tutorial (https://www.youtube.com/c/MinistryofNodes), I strongly reccomend you to visit the channel and watch his content 
 
 
 # Dedicated HDD preparation and migration of /home
