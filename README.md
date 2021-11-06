@@ -24,6 +24,7 @@ fdisk /dev/sdb
 
 We are going to use the entire disk, so nothing fancy.
 
+'''bash
 pvcreate /dev/sdb1
 pvs
 vgcreate vg_home /dev/sdb1
@@ -36,6 +37,7 @@ mkdir /home
 chmod 1777 /home
 chwon root:root /home
 nano /etc/fstab (append to the file)
+'''
 
 '''sh
 /dev/vg_home/lv_home /home                xfs     defaults,noatime 1 2
