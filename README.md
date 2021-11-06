@@ -3,12 +3,18 @@ Run a BTC full node for fun and profit
 
 
 A Huge thanks to Ministry of Nodes and his precious video tutorial. What you will find here is nothing but an updated 
-step by step guide to that video tutorial (https://www.youtube.com/c/MinistryofNodes), I strongly reccomend you to visit the channel and watch his content 
+step by step guide to that video tutorial. I strongly reccomend you to visit the channel and watch his content.
+
+[Ministry of Nodes](https://www.youtube.com/c/MinistryofNodes)
+--
 
 
 # Dedicated HDD preparation and migration of /home
 
-fdisk /dev/sdb
+```
+$ fdisk /dev/sdb
+```
+
 - n
 - p
 - enter
@@ -17,7 +23,7 @@ fdisk /dev/sdb
 - 31
 - w
 
-We are going to use the entire disk, so nothing fancy.
+> We are going to use the entire disk, so nothing fancy.
 
 ```bash
 $ pvcreate /dev/sdb1
@@ -52,7 +58,7 @@ $ sudo apt install tor
 # Download Files
 
 
-Download from https://bitcoincore.org/en/download/:
+[BitcoinCore](https://bitcoincore.org/en/download/)
 
 ```
 $ wget https://bitcoincore.org/bin/bitcoin-core-22.0/SHA256SUMS
@@ -60,7 +66,7 @@ $ wget https://bitcoincore.org/bin/bitcoin-core-22.0/SHA256SUMS.asc
 $ wget https://bitcoincore.org/bin/bitcoin-core-22.0/bitcoin-22.0-x86_64-linux-gnu.tar.gz
 ```
 
-> Note: if you are upgrading the version and want to verify the new packege, consider to run gpg --keyserver hkp://keyserver.ubuntu.com --refresh-keys
+>if you are upgrading the version and want to verify the new packege, consider to run gpg --keyserver hkp://keyserver.ubuntu.com --refresh-keys
 
 
 
@@ -71,19 +77,19 @@ $ cd Downloads/
 $ sha256sum --ignore-missing --check SHA256SUMS
 ```
 
-In the output produced by the above command, you can safely ignore any warnings and failures, but you must ensure the output lists "OK" after the name of the release file you downloaded
+_In the output produced by the above command, you can safely ignore any warnings and failures, but you must ensure the output lists "OK" after the name of the release file you downloaded_
 
 ```
 $ gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys E777299FC265DD04793070EB944D35F9AC3DB76A
 ```
 
-The output of the command above should say that one key was imported, updated, has new signatures, or remained unchanged.
+_The output of the command above should say that one key was imported, updated, has new signatures, or remained unchanged._
 
 ```
 $ gpg --verify SHA256SUMS.asc
 ```
 
-Search for a line with "gpg: Good signature"
+_Search for a line with "gpg: Good signature"_
 
 
 # Install Bitcoind
@@ -92,7 +98,7 @@ Search for a line with "gpg: Good signature"
 $ sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-22.0/bin/*
 ```
 
-let it run (not needed) until you will see "2021-10-30T14:07:08Z Synchronizing blockheaders, height: 707434 (~100.00%)" and than interrupt it (CTRL-C)
+_let it run (not needed) until you will see "2021-10-30T14:07:08Z Synchronizing blockheaders, height: 707434 (~100.00%)" and than interrupt it (CTRL-C)_
 
 
 
@@ -219,14 +225,14 @@ $ sudo systemctl start bitcoind
 $ tail -f /home/satoshi/.bitcoind/debug.log
 ```
 
-If you did not made mistakes, everything should be allright.
+_If you did not made mistakes, everything should be allright._
 
 
 # Bitcoin Sync
 
-Now that you set up everything what we needed, we have to wait the end of block sync process, it will takes a while, depending from bandwith, PC hardware limitation, TOT blocks numbers
+_Now that you set up everything what we needed, we have to wait the end of block sync process, it will takes a while, depending from bandwith, PC hardware limitation, TOT blocks numbers_
 
-you can monitor the status and healty of the process with 
+_you can monitor the status and healty of the process with_
 
 ```
 $ bitcoin-cli getblockchaininfo
@@ -235,19 +241,22 @@ $ bitcoin-cli getconnectioncount
 
 Ex JSON Resp of getblockchaininfo:
 
-> Note: "chain": "main", "blocks": 503527, "headers": 707440,
+```json
+"chain": "main", 
+"blocks": 503527, 
+"headers": 707440,
+```
+
+> Note: When Blocks and Headers will match in number, you will be done.
 
 
-When Blocks and Headers will match in number, you will be done.
-
-
-> Note: Double check you are effectivelly connected through Tor (search in log for)
+> Double check you are effectivelly connected through Tor (search in log for)
 
 ```
 2021-11-01T16:15:30Z tor: Got service ID 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad, advertising service 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad.onion:8333
 ```
 
-Some useful Cmd:
+_Some useful Cmd:_
 
 ```
 $ bitcoin-cli getnetworkinfo
@@ -261,12 +270,12 @@ $ bitcoin-cli getpeerinfo
 
 For a fully walk through in parameters and command used to generate the needed values, please refer to:
 
-https://blog.lopp.net/tor-only-bitcoin-lightning-guide/
-https://en.bitcoin.it/wiki/Setting_up_a_Tor_hidden_service
+
+[Tor Guide](https://blog.lopp.net/tor-only-bitcoin-lightning-guide/)
+[Tor Hidden Service](https://en.bitcoin.it/wiki/Setting_up_a_Tor_hidden_service)
 
 
 ```bitcoin.conf
-
 
 server=1
 blockfilterindex=1
@@ -361,7 +370,7 @@ $ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0
 $ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/SHA256SUMS
 ```
 
-> Note: we do not trust, so we verify
+> we do not trust, so we verify
 
 ```
 $ sha256sum --check SHA256SUMS-pip
@@ -415,7 +424,7 @@ $ systemctl status spectre.service
 ```
 
 
-Your Spectre instance is now available at: http://YOUR_LAN_IP:25441/
+_Your Spectre instance is now available at: http://YOUR_LAN_IP:25441/_
 
 
 
@@ -423,28 +432,25 @@ Your Spectre instance is now available at: http://YOUR_LAN_IP:25441/
 
 
 
-> Note: Set your admin (strong) password under Settings --> Authentication 
+> Set your admin (strong) password under Settings --> Authentication 
 
 
 
-> Note: Multiple Users -- If you are going to use Spectre from different PC/Accounts ( Your family/Friends )
-> Note: Password Protection -- If you are going to use Spectre only from the Bitcoin Node Instance
+> Multiple Users -- If you are going to use Spectre from different PC/Accounts ( Your family/Friends )
+> Password Protection -- If you are going to use Spectre only from the Bitcoin Node Instance
 
 
 
 
 # Connect Your Device to Spectre (Trezor/Ledger)
 
-For convinience, we want to connect to Spectre instance remotely but having our hardwere wallet phisically linked to our laptop/pc (We want to use our Spectre from anywhere) 
+_For convinience, we want to connect to Spectre instance remotely but having our hardwere wallet phisically linked to our laptop/pc (We want to use our Spectre from anywhere)_
 
 
-If you are going to link your device to Spectre from a Linux machine, we need to set a few things up.
+_If you are going to link your device to Spectre from a Linux machine, we need to set a few things up._
 
-https://github.com/cryptoadvance/specter-desktop/tree/master/udev
+[Spectre udev](https://github.com/cryptoadvance/specter-desktop/tree/master/udev)
 
-Under "udev rules" section you can find the rules for trezor, ledger and so on
-
-For the scope of this HowTo, let's take the Trezor one.
 
 ```
 $ git clone https://github.com/cryptoadvance/specter-desktop.git
@@ -462,7 +468,7 @@ $ sudo usermod -aG plugdev `whoami`
 # Install and run Spectre locally (hwibridge mode)
 
 
-if you are doing this on Ubutu please remember to install the prereqs (sudo apt install libusb-1.0-0-dev libudev-dev python3-dev)
+> if you are doing this on Ubutu please remember to install the prereqs (sudo apt install libusb-1.0-0-dev libudev-dev python3-dev)
 
 
 
@@ -472,7 +478,7 @@ $ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0
 $ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/SHA256SUMS
 ```
 
-we do not trust, so we verify
+
 
 ```
 $ sha256sum --check SHA256SUMS-pip
@@ -485,20 +491,20 @@ $ pip3 install cryptoadvance.specter-1.7.0.tar.gz
 ```
 
 
-Download the Binary from: https://github.com/cryptoadvance/specter-desktop/releases (AppImage file)
+[AppImage](https://github.com/cryptoadvance/specter-desktop/releases)
 
 
 ```
 $ sudo pacman -S appimagelauncher
 ```
 
-For reference https://www.youtube.com/watch?v=rUOxjyOGOGw (you will need to configure the Desktop App)
+[Spectre Video](https://www.youtube.com/watch?v=rUOxjyOGOGw)
 
 
 ![Screenshot](spectre_local.png)
 
 
-1) You need to configure the desktop app to cummunicate with your Bitcoin node. user and password are the ones you already set in your bitcoin.conf file:
+1. You need to configure the desktop app to cummunicate with your Bitcoin node. user and password are the ones you already set in your bitcoin.conf file:
 
 
 ```
@@ -506,19 +512,20 @@ rpcuser=YOUR_USER_HERE
 rpcpassword=YOUR_PASSWD_HERE
 ```
 
-> Note: Host: http://YOU_REMOTE_IP_NODE Port: 8332
+> Host: http://YOU_REMOTE_IP_NODE 
+> Port: 8332
 
 
 ![Screenshot](spectre_local.png)
 
 
-2) USB configuration, double check that all the HWI bridges are in place
+2. USB configuration, double check that all the HWI bridges are in place
 
 
 ![Screenshot](hwi_bridge.png)
 
 
-3) You are now able to add yout harware wallet first and create than your wallet (For Trezor, as far as i know, it's better go for the Nested instead Segwit)
+3. You are now able to add yout harware wallet first and create than your wallet (For Trezor, as far as i know, it's better go for the Nested instead Segwit)
 
 
 
@@ -532,7 +539,7 @@ $ openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 3650 -out cert
 $ sudo nano /etc/systemd/system/spectre.service
 ```
 
-modify in:
+_modify in:_
 
 ```
 ExecStart=/usr/bin/python3 -m cryptoadvance.specter server --host 0.0.0.0 --cert=/home/satoshi/.specter/cert.pem --key=/home/satoshi/.specter/key.pem
@@ -543,7 +550,7 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl restart spectre.service && tail -f specter.log
 ```
 
-Verify the following:
+_Verify the following:_
 
 ```
 [2021-11-03 15:45:02,641] INFO in _internal:  * Running on https://0.0.0.0:25441/ (Press CTRL+C to quit)
@@ -564,10 +571,7 @@ $ cp /home/satoshi/electrs/doc/config_example.toml /home/satoshi/electrs/electrs
 ```
 
 
-For the Index Sync I had a few issue, I had to change a few things. 
-
-
-
+> Note: For the Index Sync I had a few issue, I had to change a few things. 
 
 
 ```
@@ -589,10 +593,11 @@ whitelist=download@127.0.0.1
 $ /home/satoshi/electrs/target/release/electrs -v --timestamp
 ```
 
-As soon as the indexing process will be accomplished:
+As soon as the indexing process will be terminated:
 
-> Note: (in LOG file) 2021-11-03T20:00:36.068Z INFO  electrs::db] finished full compaction 
-
+```
+2021-11-03T20:00:36.068Z INFO  electrs::db] finished full compaction 
+```
 
 
 
@@ -635,15 +640,17 @@ $ sudo systemctl enable electrs.service
 $ sudo systemctl start electrs.service
 ```
 
-> Note: if you want to expone your Electrum on the Tor nework follow the following https://github.com/romanz/electrs/blob/master/doc/config.md#tor-hidden-service
+> Note: if you want to expone your Electrum on the Tor nework follow the following 
 
+[electrs tor](https://github.com/romanz/electrs/blob/master/doc/config.md#tor-hidden-service)
 
 
 
 # Electrum Wallet
 
-I'm on Arch linux, by enabling AUR repository it is possible to obtain the git version, but in order to use it in conjunction
-with our hardware wallet we need to execute the following commands:
+> on Arch linux, by enabling AUR repository it is possible to obtain the git version, 
+> but in order to use it in conjunction
+> with our hardware wallet we need to execute the following commands:
 
 ```
 $ git clone https://github.com/spesmilo/electrum.git
@@ -654,13 +661,9 @@ $ sudo cp contrib/udev/*.rules /etc/udev/rules.d/
 $ sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
-alternatives setup on Linux here: https://electrum.org/#download
+_o connect to your node, use the following string:_
 
-
-to connect to your node, use the following string:
-
-
-> Note: YOUR_NODE_IP:50001:t
+>YOUR_NODE_IP:50001:t
 
 
 You are now readz to add your device and create a wallet
@@ -705,7 +708,7 @@ BTCEXP_NO_RATES=false
 $ ~/btc-rpc-explorer$ npm start
 ```
 
-> Note: http://YOU_IP_NODE:3002/
+> http://YOU_IP_NODE:3002/
 
 
 ```
@@ -818,21 +821,24 @@ BITCOIND_ZMQ_BLK_HASH=28334
 $ nano docker-mysql.conf.tpl
 ```
 
-Change root and user passwd. Choose a strong one
+> Note: Change root and user passwd. Choose a strong one
 
 
 ```
 $ nano docker-node.conf.tpl
 ```
 
-Modify the three value: NODE_API_KEY, NODE_ADMIN_KEY, NODE_JWT_SECRET
+Modify the three value: 
 
+```
+NODE_API_KEY, NODE_ADMIN_KEY, NODE_JWT_SECRET
+```
 
 ```
 $ nano docker-explorer.conf.tpl
 ```
 
-> Note: EXPLORER_INSTALL=off
+> EXPLORER_INSTALL=off
 
 
 ```
@@ -846,11 +852,9 @@ $ ./dojo.sh install
 while you are waiting for the dojo ti finish the aligment process, we can first install and pair the samurai wallet with our dojo instace
 as well install and configure the Whirpool CLI. 
 
-1) Pair the wallet with your dojo instance: https://www.youtube.com/watch?v=5ZzCEs9qJo4&list=PLCRbH-IWlcW290O0N0lQV6efxuCA5Ja8c&index=10
+1. Pair the wallet with your dojo instance: https://www.youtube.com/watch?v=5ZzCEs9qJo4&list=PLCRbH-IWlcW290O0N0lQV6efxuCA5Ja8c&index=10
 
-2) Create your wallet
-
-3)
+2. Create your wallet
 
 ```
 $ java
@@ -863,16 +867,14 @@ $ cd ~/whirpool
 $ wget https://code.samourai.io/whirlpool/whirlpool-client-cli/uploads/21d25ed02cceb91f4aa95b6389b9da9c/whirlpool-client-cli-
 {{LAST_VERSION}}-run.jar
 ```
+_The Video explain how to retrive the payload from the samurai wallet_
 
-The Video explain how to retrive the payload from the samurai wallet
+4. You will be asked for the passphrase you've already set, type it ans wait for:
 
-4) You will be asked for the passphrase you've already set, type it ans wait for:
+> STARTED
 
-"STARTED"
+5. CTRL-C
 
-5) CTRL-C
-
-6)
 
 ```
 $ sudo nano /etc/systemd/system/whirpool.service
@@ -921,15 +923,14 @@ $ sudo systemctl status whirpool.service
 
 ![Screenshot](setup1.png)
 
-The Key requested is in whirlpool-cli-config.properties file, under whirpool folder, 
-which has been automatically created at first whirpool run
+_The Key requested is in whirlpool-cli-config.properties file, under whirpool folder, 
+which has been automatically created at first whirpool run_
 
 ![Screenshot](setup2.png)
 
 ![Screenshot](setup3.png)
 
-
-GUI -- Whirpool CLI -- Dojo -- Wallet are now working in synergy
+> Note: GUI -- Whirpool CLI -- Dojo -- Wallet are now working in synergy
 
 
 
