@@ -6,7 +6,7 @@ A Huge thanks to Ministry of Nodes and his precious video tutorial. What you wil
 step by step guide to that video tutorial. I strongly reccomend you to visit the channel and watch his content.
 
 [Ministry of Nodes](https://www.youtube.com/c/MinistryofNodes)
---
+
 
 
 # Dedicated HDD preparation and migration of /home
