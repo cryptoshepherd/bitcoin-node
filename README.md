@@ -38,18 +38,24 @@ chmod 1777 /home
 chwon root:root /home
 nano /etc/fstab (append to the file)
 
---- /etc/fstab ---
+'''sh
 /dev/vg_home/lv_home /home                xfs     defaults,noatime 1 2
---- END OF FILE ---
+'''
 
 reboot (fingers cross)
 
 
+
+
 # Install TOR if you did not
+
 
 sudo apt install tor 
 
+
+
 # Download Files
+
 
 Download from the following page: https://bitcoincore.org/en/download/
 
@@ -59,32 +65,41 @@ Download from the following page: https://bitcoincore.org/en/download/
 
 * if you are upgrading the version and want to verify the new packege, consider to run gpg --keyserver hkp://keyserver.ubuntu.com --refresh-keys
 
+
+
 # Verify the Package
 
+'''sh
 cd Downloads/
 sha256sum --ignore-missing --check SHA256SUMS
 
-* In the output produced by the above command, you can safely ignore any warnings and failures, but you must ensure the output lists "OK" after the name of the release file you downloaded
+In the output produced by the above command, you can safely ignore any warnings and failures, but you must ensure the output lists "OK" after the name of the release file you downloaded
 
-gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys E777299FC265DD04793070EB944D35F9AC3DB76A
+$ gpg --keyserver hkp://keyserver.ubuntu.com --recv-keys E777299FC265DD04793070EB944D35F9AC3DB76A
 
-* The output of the command above should say that one key was imported, updated, has new signatures, or remained unchanged.
+The output of the command above should say that one key was imported, updated, has new signatures, or remained unchanged.
 
-gpg --verify SHA256SUMS.asc
+$ gpg --verify SHA256SUMS.asc
 
-* Search for a line with "gpg: Good signature"
+Search for a line with "gpg: Good signature"
+'''
+
+
 
 # Install Bitcoind
 
-sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-22.0/bin/*
+'''sh
+$ sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-22.0/bin/*
 
-bitcoind
+let it run (not needed) until you will see "2021-10-30T14:07:08Z Synchronizing blockheaders, height: 707434 (~100.00%)" and than interrupt it (CTRL-C)
+'''
 
-* let it run (not needed) until you will see "2021-10-30T14:07:08Z Synchronizing blockheaders, height: 707434 (~100.00%)" and than interrupt it (CTRL-C)
+
 
 # Confiure Bitcoind 
 
---- bitcoin.conf ---
+'''sh
+bitcoin.conf
 
 server=1
 blockfilterindex=1
@@ -100,18 +115,19 @@ zmqpubrawtx=tcp://0.0.0.0:28333
 zmqpubhashblock=tcp://0.0.0.0:28334
 rpcuser=YOUR_USER
 rpcpassword=YOUR_PASSWD
+'''
 
 
---- END OF FILE ---
 
 # Configure the service
 
-cd /etc/systemd/system/
-sudo nano bitcoind.service
+$ cd /etc/systemd/system/
+$ sudo nano bitcoind.service
 
-NOTE: replace "***" with yours
+replace "***" with yours
 
---- bitcoind.service ---
+'''sh
+bitcoind.service
 
 # It is not recommended to modify this file in-place, because it will
 # be overwritten during package upgrades. If you want to add further
@@ -195,13 +211,12 @@ MemoryDenyWriteExecute=true
 
 [Install]
 WantedBy=multi-user.target
-
---- END OF FILE ---
+'''
 
 '''sh
-sudo systemctl enable bitcoind.service
-sudo systemctl start bitcoind
-tail -f /home/satoshi/.bitcoind/debug.log
+$ sudo systemctl enable bitcoind.service
+$ sudo systemctl start bitcoind
+$ tail -f /home/satoshi/.bitcoind/debug.log
 '''
 
 If you did not made mistakes, everything should be allright.
@@ -213,9 +228,10 @@ Now that you set up everything what we needed, we have to wait the end of block 
 
 you can monitor the status and healty of the process with 
 
-
-bitcoin-cli getblockchaininfo
-bitcoin-cli getconnectioncount
+'''sh
+$ bitcoin-cli getblockchaininfo
+$ bitcoin-cli getconnectioncount
+'''
 
 Ex JSON Resp of getblockchaininfo:
 
@@ -231,6 +247,7 @@ NOTE: Double check you are effectivelly connected through Tor (search in log for
 --> 2021-11-01T16:15:30Z tor: Got service ID 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad, advertising service 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad.onion:8333
 
 Some useful Cmd:
+
 '''sh
 bitcoin-cli getnetworkinfo
 bitcoin-cli getconnectioncount
@@ -248,10 +265,10 @@ https://blog.lopp.net/tor-only-bitcoin-lightning-guide/
 https://en.bitcoin.it/wiki/Setting_up_a_Tor_hidden_service
 
 
+'''sh
+bitcoin.conf
 
 
-
---- bitcoin.conf ---
 server=1
 blockfilterindex=1
 rpcport=8332
@@ -328,8 +345,7 @@ addnode=ceeji4qpfs3ms3zc.onion
 addnode=clexmzqio7yhdao4.onion
 addnode=gb5ypqt63du3wfhn.onion
 addnode=h2vlpudzphzqxutd.onion
-
---- END OF FILE ---
+'''
 
 
 
@@ -337,23 +353,23 @@ addnode=h2vlpudzphzqxutd.onion
 # Install Spectre Desktop ("A specter is haunting the modern world, the specter of crypto anarchy."The Crypto Anarchist Manifesto - Timothy C. May - Sun, 22 Nov 92 12:11:24 PST)
 
 '''sh
-sudo apt install libusb-1.0-0-dev libudev-dev python3-dev
+$ sudo apt install libusb-1.0-0-dev libudev-dev python3-dev
 '''
 
 '''sh
-wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/cryptoadvance.specter-1.7.0.tar.gz
+$ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/cryptoadvance.specter-1.7.0.tar.gz
 
-wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/SHA256SUMS
+$ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/SHA256SUMS
 
 NOTE: we do not trust, so we verify
 
-sha256sum --check SHA256SUMS-pip
+$ sha256sum --check SHA256SUMS-pip
 
-tar zxvf cryptoadvance.specter-1.7.0.tar.gz cryptoadvance.specter-1.7.0/requirements.txt
+$ tar zxvf cryptoadvance.specter-1.7.0.tar.gz cryptoadvance.specter-1.7.0/requirements.txt
 
-pip3 install -r cryptoadvance.specter-1.7.0/requirements.txt --require-hashes --upgrade
+$ pip3 install -r cryptoadvance.specter-1.7.0/requirements.txt --require-hashes --upgrade
 
-pip3 install cryptoadvance.specter-1.7.0.tar.gz
+$ pip3 install cryptoadvance.specter-1.7.0.tar.gz
 '''
 
 
@@ -361,18 +377,18 @@ pip3 install cryptoadvance.specter-1.7.0.tar.gz
 
 # Create a service file for Spectre
 
-NOTE: Replace " * " 
+Replace " * " 
 
 '''sh
-cd /etc/systemd/system
+$ cd /etc/systemd/system
 
-sudo nano spectre.service
+$ sudo nano spectre.service
 '''
 
 
 
-
---- spectre.service ---
+'''sh
+spectre.service
 
 [Unit]
 Description=Specter Desktop Service
@@ -387,16 +403,15 @@ StandardInput=tty-force
 
 [Install]
 WantedBy=multi-user.target
-
---- END OF FILE ---
+'''
 
 
 
 
 '''sh
-sudo systemctl start spectre.service
-sudo systemct enable spectre.service
-systemctl status spectre.service
+$ sudo systemctl start spectre.service
+$ sudo systemct enable spectre.service
+$ systemctl status spectre.service
 '''
 
 
@@ -420,7 +435,7 @@ Password Protection -- If you are going to use Spectre only from the Bitcoin Nod
 
 # Connect Your Device to Spectre (Trezor/Ledger)
 
-IMPORTANT: For convinience, we want to connect to Spectre instance remotely but having our hardwere wallet phisically linked to our laptop/pc (We want to use our Spectre from anywhere) 
+For convinience, we want to connect to Spectre instance remotely but having our hardwere wallet phisically linked to our laptop/pc (We want to use our Spectre from anywhere) 
 
 
 If you are going to link your device to Spectre from a Linux machine, we need to set a few things up.
@@ -447,24 +462,24 @@ $ sudo usermod -aG plugdev `whoami`
 # Install and run Spectre locally (hwibridge mode)
 
 
-NOTE: if you are doing this on Ubutu please remember to install the prereqs (sudo apt install libusb-1.0-0-dev libudev-dev python3-dev)
+if you are doing this on Ubutu please remember to install the prereqs (sudo apt install libusb-1.0-0-dev libudev-dev python3-dev)
 
 
 
 '''sh
-wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/cryptoadvance.specter-1.7.0.tar.gz
+$ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/cryptoadvance.specter-1.7.0.tar.gz
 
-wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/SHA256SUMS
+$ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/SHA256SUMS
 
-NOTE: we do not trust, so we verify
+we do not trust, so we verify
 
-sha256sum --check SHA256SUMS-pip
+$ sha256sum --check SHA256SUMS-pip
 
-tar zxvf cryptoadvance.specter-1.7.0.tar.gz cryptoadvance.specter-1.7.0/requirements.txt
+$ tar zxvf cryptoadvance.specter-1.7.0.tar.gz cryptoadvance.specter-1.7.0/requirements.txt
 
-pip3 install -r cryptoadvance.specter-1.7.0/requirements.txt --require-hashes --upgrade
+$ pip3 install -r cryptoadvance.specter-1.7.0/requirements.txt --require-hashes --upgrade
 
-pip3 install cryptoadvance.specter-1.7.0.tar.gz
+$ pip3 install cryptoadvance.specter-1.7.0.tar.gz
 '''
 
 
@@ -472,7 +487,7 @@ Download the Binary from: https://github.com/cryptoadvance/specter-desktop/relea
 
 
 '''sh
-sudo pacman -S appimagelauncher
+$ sudo pacman -S appimagelauncher
 '''
 
 For reference https://www.youtube.com/watch?v=rUOxjyOGOGw (you will need to configure the Desktop App)
@@ -499,6 +514,7 @@ Port: 8332
 
 2) USB configuration, double check that all the HWI bridges are in place
 
+
 ![Screenshot](hwi_bridge.png)
 
 
@@ -508,9 +524,6 @@ Port: 8332
 
 
 # (OPTIONAL but RECCOMMENDED) enable HTTPS for your Spectre Node instance
-
-
-
 
 
 '''sh
@@ -536,8 +549,6 @@ Verify the following:
 # Install Electrum server
 
 
-
-
 '''sh
 $ sudo apt install clang cmake build-essential cargo
 $ git clone https://github.com/romanz/electrs
@@ -546,7 +557,6 @@ $ cargo build --locked --release
 $ cp /home/satoshi/electrs/doc/config_example.toml /home/satoshi/electrs/electrs.toml
 '''
 
-IMPORTANT:
 
 For the Index Sync I had a few issue, I had to change a few things. 
 
@@ -554,19 +564,20 @@ For the Index Sync I had a few issue, I had to change a few things.
 
 
 
----
+'''sh
 # Electrs (Not Necessary)
 txindex=0
 # txindex=1 (OLD)
 
 # Electrs
 prune=0
-#
+'''
 
 # Electrs (Needed to avaoid problems during Index process, due to the maxuploadtarget parameters set
-whitelist=download@127.0.0.1
----
 
+'''sh
+whitelist=download@127.0.0.1
+'''
 
 
 
@@ -576,7 +587,7 @@ $ /home/satoshi/electrs/target/release/electrs -v --timestamp
 
 As soon as the indexing process will be accomplished:
 
---- >  (in LOG file) 2021-11-03T20:00:36.068Z INFO  electrs::db] finished full compaction 
+(in LOG file) 2021-11-03T20:00:36.068Z INFO  electrs::db] finished full compaction 
 
 
 
@@ -584,16 +595,15 @@ As soon as the indexing process will be accomplished:
 # Run Electrs as a service
 
 
-
-
 '''sh
-sudo nano /etc/systemd/system/electrs.service
+$ sudo nano /etc/systemd/system/electrs.service
 '''
 
 
 
+'''sh
+electrs.service
 
---- electrs.service ---
 [Unit]
 Description=Electrs
 After=bitcoind.service
@@ -611,19 +621,17 @@ RestartSec=60
 
 [Install]
 WantedBy=multi-user.target
---- END OF FILE ---
+'''
 
 
 
 
 '''sh
-sudo systemctl enable electrs.service
-sudo systemctl start electrs.service
+$ sudo systemctl enable electrs.service
+$ sudo systemctl start electrs.service
 '''
 
-
-
-NOTE: if you want to expone your Electrum on the Tor nework follow the following
+if you want to expone your Electrum on the Tor nework follow the following
 
 https://github.com/romanz/electrs/blob/master/doc/config.md#tor-hidden-service
 
@@ -644,7 +652,7 @@ $ sudo cp contrib/udev/*.rules /etc/udev/rules.d/
 $ sudo udevadm control --reload-rules && sudo udevadm trigger
 '''
 
-NOTE: alternatives setup on Linux here: https://electrum.org/#download
+alternatives setup on Linux here: https://electrum.org/#download
 
 
 to connect to your node, use the following string:
@@ -662,8 +670,8 @@ You are now readz to add your device and create a wallet
 
 let's bring back txindex parameter to 1 in bitcoin.conf and restart the service.
 
-NOTE: I have reason to believe that the only config change needed for Electrs was the whitelist= parameter 
-      and that I did not need to set the txindex to 0, anyway since our electrs is now fully sync we do not care 
+I have reason to believe that the only config change needed for Electrs was the whitelist= parameter 
+and that I did not need to set the txindex to 0, anyway since our electrs is now fully sync we do not care 
 
 '''sh
 $ curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
@@ -678,7 +686,10 @@ $ cp .env-sample ~/.config/btc-rpc-explorer.env
 $ nano ~/.config/btc-rpc-explorer.env
 '''
 
---- btc-rpc-explorer.env ----
+'''sh
+
+btc-rpc-explorer.env
+
 BTCEXP_HOST=127.0.0.1
 BTCEXP_BITCOIND_USER=YOUR_BITCOIND_USER
 BTCEXP_BITCOIND_PASS=YOUR_BITCOIND_PASSWORD
@@ -686,13 +697,13 @@ BTCEXP_ADDRESS_API=electrumx
 BTCEXP_ELECTRUM_SERVERS=tcp://127.0.0.1:50001
 BTCEXP_SLOW_DEVICE_MODE=false
 BTCEXP_NO_RATES=false
---- END OF FILE ---
+'''
 
 '''sh
 $ ~/btc-rpc-explorer$ npm start
 '''
 
----> http://YOU_IP_NODE:3002/
+http://YOU_IP_NODE:3002/
 
 
 '''sh
@@ -700,7 +711,8 @@ $ sudo nano /etc/systemd/system/btcexplorer.service
 '''
 
 
---- btcexplorer.service ---
+'''sh
+btcexplorer.service
 
 [Unit]
 Description=BTC RPC Explorer
@@ -721,8 +733,7 @@ StartLimitBurst=2
 
 [Install]
 WantedBy=multi-user.target
-
---- END OF FILE ---
+'''
 
 '''sh
 $ sudo systemct enable /etc/systemd/system/btcexplorer.service
@@ -832,8 +843,8 @@ cd ~/dojo-app/docker/my-dojo
 
 # Samurai Wallet Pairing
 
-NOTE:while you are waiting for the dojo ti finish the aligment process, we can first install and pair the samurai wallet with our dojo instace
-     as well install and configure the Whirpool CLI. 
+while you are waiting for the dojo ti finish the aligment process, we can first install and pair the samurai wallet with our dojo instace
+as well install and configure the Whirpool CLI. 
 
 1) Pair the wallet with your dojo instance: https://www.youtube.com/watch?v=5ZzCEs9qJo4&list=PLCRbH-IWlcW290O0N0lQV6efxuCA5Ja8c&index=10
 
@@ -862,7 +873,7 @@ $ wget https://code.samourai.io/whirlpool/whirlpool-client-cli/uploads/21d25ed02
 {{LAST_VERSION}}-run.jar
 '''
 
-NOTE: The Video explain how to retrive the payload from the samurai wallet
+The Video explain how to retrive the payload from the samurai wallet
 
 4) You will be asked for the passphrase you've already set, type it ans wait for:
 
@@ -876,7 +887,8 @@ NOTE: The Video explain how to retrive the payload from the samurai wallet
 $ sudo nano /etc/systemd/system/whirpool.service
 '''
 
---- whirpool.service ---
+'''sh
+whirpool.service 
 
 [Unit]
 Description=Whirpool CLI
@@ -895,8 +907,7 @@ RestartSec=60
 
 [Install]
 WantedBy=multi-user.target
-
---- END OF FILE ---
+'''
 
 
 '''sh
@@ -905,15 +916,14 @@ $ sudo systemctl start whirpool.service
 $ sudo systemctl status whirpool.service
 '''
 
----
+'''sh
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
  ⣿ AUTHENTICATION REQUIRED
 ⣿ Whirlpool wallet is CLOSED.
 ⣿ Please start GUI to authenticate and start mixing.
 ⣿ Or authenticate with --authenticate
 ⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
----
-
+'''
 
 
 
@@ -921,15 +931,15 @@ $ sudo systemctl status whirpool.service
 
 ![Screenshot](setup1.png)
 
-NOTE: The Key requested is in whirlpool-cli-config.properties file, under whirpool folder, 
-      which has been automatically created at first whirpool run
+The Key requested is in whirlpool-cli-config.properties file, under whirpool folder, 
+which has been automatically created at first whirpool run
 
 ![Screenshot](setup2.png)
 
 ![Screenshot](setup3.png)
 
 
-NOTE: GUI -- Whirpool CLI -- Dojo -- Wallet are now working in synergy
+GUI -- Whirpool CLI -- Dojo -- Wallet are now working in synergy
 
 
 
