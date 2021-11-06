@@ -24,35 +24,33 @@ fdisk /dev/sdb
 
 We are going to use the entire disk, so nothing fancy.
 
-'''bash
-pvcreate /dev/sdb1
-pvs
-vgcreate vg_home /dev/sdb1
-lvcreate -l 100%FREE -n lv_home vg_home
-mkfs.xfs /dev/vg_home/lv_home
-mount /dev/vg_home/lv_home /mnt
-cp -pr /home/* /mnt
-mv /home /home.orig
-mkdir /home
-chmod 1777 /home
-chwon root:root /home
-nano /etc/fstab (append to the file)
-'''
+```bash
+$ pvcreate /dev/sdb1
+$ pvs
+$ vgcreate vg_home /dev/sdb1
+$ lvcreate -l 100%FREE -n lv_home vg_home
+$ mkfs.xfs /dev/vg_home/lv_home
+$ mount /dev/vg_home/lv_home /mnt
+$ cp -pr /home/* /mnt
+$ mv /home /home.orig
+$ mkdir /home
+$ chmod 1777 /home
+$ chwon root:root /home
+$ nano /etc/fstab (append to the file)
+```
 
-'''sh
+```
 /dev/vg_home/lv_home /home                xfs     defaults,noatime 1 2
-'''
+```
 
 reboot (fingers cross)
 
 
-
-
 # Install TOR if you did not
 
-
-sudo apt install tor 
-
+```
+$ sudo apt install tor 
+```
 
 
 # Download Files
@@ -62,9 +60,9 @@ Download from the following page: https://bitcoincore.org/en/download/
 
 1) SHA256SUMS
 2) SHA256SUMS.asc
-3)(at time of writing) https://bitcoincore.org/bin/bitcoin-core-22.0/bitcoin-22.0-x86_64-linux-gnu.tar.gz
+3) https://bitcoincore.org/bin/bitcoin-core-22.0/bitcoin-22.0-x86_64-linux-gnu.tar.gz
 
-* if you are upgrading the version and want to verify the new packege, consider to run gpg --keyserver hkp://keyserver.ubuntu.com --refresh-keys
+> Note: if you are upgrading the version and want to verify the new packege, consider to run gpg --keyserver hkp://keyserver.ubuntu.com --refresh-keys
 
 
 
