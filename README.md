@@ -4,7 +4,7 @@ Run a BTC full node for fun and profit
 # Some cosideration
 1) We are going to use VPN over TOR, you will need a good VPN, pickup a good one. Consider to activate a killswitch. 
 
-Before start the installation process and the first run, consider to set up your vpn first
+> Note: Before start the installation process and the first run, consider to set up your vpn first
 
 2) We will need space, I've addded a 2TB SSD afterwards and re-mounted my /home FS on a new Logical Volume on a dedicated (a bit slower drive)
 
@@ -57,12 +57,12 @@ $ sudo apt install tor
 # Download Files
 
 
-Download from the following page: https://bitcoincore.org/en/download/
+Download from https://bitcoincore.org/en/download/:
 
 ```
-1) SHA256SUMS
-2) SHA256SUMS.asc
-3) https://bitcoincore.org/bin/bitcoin-core-22.0/bitcoin-22.0-x86_64-linux-gnu.tar.gz
+$ wget https://bitcoincore.org/bin/bitcoin-core-22.0/SHA256SUMS
+$ wget https://bitcoincore.org/bin/bitcoin-core-22.0/SHA256SUMS.asc
+$ wget https://bitcoincore.org/bin/bitcoin-core-22.0/bitcoin-22.0-x86_64-linux-gnu.tar.gz
 ```
 
 > Note: if you are upgrading the version and want to verify the new packege, consider to run gpg --keyserver hkp://keyserver.ubuntu.com --refresh-keys
@@ -103,8 +103,7 @@ let it run (not needed) until you will see "2021-10-30T14:07:08Z Synchronizing b
 
 # Confiure Bitcoind 
 
-```
-bitcoin.conf
+```bitcoin.conf
 
 server=1
 blockfilterindex=1
@@ -133,8 +132,7 @@ $ sudo nano bitcoind.service
 
 > Note: replace "***" with yours
 
-```
-bitcoind.service
+```bitcoind.service
 
 # It is not recommended to modify this file in-place, because it will
 # be overwritten during package upgrades. If you want to add further
@@ -242,11 +240,8 @@ $ bitcoin-cli getconnectioncount
 
 Ex JSON Resp of getblockchaininfo:
 
-```
-"chain": "main",
-"blocks": 503527,
-"headers": 707440,
-```
+> Note: "chain": "main", "blocks": 503527, "headers": 707440,
+
 
 When Blocks and Headers will match in number, you will be done.
 
@@ -254,15 +249,15 @@ When Blocks and Headers will match in number, you will be done.
 > Note: Double check you are effectivelly connected through Tor (search in log for)
 
 ```
---> 2021-11-01T16:15:30Z tor: Got service ID 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad, advertising service 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad.onion:8333
+2021-11-01T16:15:30Z tor: Got service ID 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad, advertising service 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad.onion:8333
 ```
 
 Some useful Cmd:
 
 ```
-bitcoin-cli getnetworkinfo
-bitcoin-cli getconnectioncount
-bitcoin-cli getpeerinfo
+$ bitcoin-cli getnetworkinfo
+$ bitcoin-cli getconnectioncount
+$ bitcoin-cli getpeerinfo
 ```
 
 
@@ -275,8 +270,7 @@ https://blog.lopp.net/tor-only-bitcoin-lightning-guide/
 https://en.bitcoin.it/wiki/Setting_up_a_Tor_hidden_service
 
 
-```
-bitcoin.conf
+```bitcoin.conf
 
 
 server=1
@@ -399,8 +393,7 @@ $ sudo nano spectre.service
 
 
 
-```
-spectre.service
+```spectre.service
 
 [Unit]
 Description=Specter Desktop Service
@@ -439,8 +432,8 @@ Your Spectre instance is now available at: http://YOUR_LAN_IP:25441/
 
 
 
-Multiple Users -- If you are going to use Spectre from different PC/Accounts ( Your family/Friends )
-Password Protection -- If you are going to use Spectre only from the Bitcoin Node Instance
+> Note: Multiple Users -- If you are going to use Spectre from different PC/Accounts ( Your family/Friends )
+> Note: Password Protection -- If you are going to use Spectre only from the Bitcoin Node Instance
 
 
 
@@ -518,9 +511,7 @@ rpcuser=YOUR_USER_HERE
 rpcpassword=YOUR_PASSWD_HERE
 ```
 
-Host: http://YOU_REMOTE_IP_NODE
-
-Port: 8332
+> Note: Host: http://YOU_REMOTE_IP_NODE Port: 8332
 
 
 ![Screenshot](spectre_local.png)
@@ -551,6 +542,7 @@ modify in:
 ```
 ExecStart=/usr/bin/python3 -m cryptoadvance.specter server --host 0.0.0.0 --cert=/home/satoshi/.specter/cert.pem --key=/home/satoshi/.specter/key.pem
 ```
+
 ```
 $ sudo systemctl daemon-reload
 $ sudo systemctl restart spectre.service && tail -f specter.log
@@ -672,9 +664,9 @@ alternatives setup on Linux here: https://electrum.org/#download
 
 to connect to your node, use the following string:
 
-```
-YOUR_NODE_IP:50001:t
-```
+
+> Note: YOUR_NODE_IP:50001:t
+
 
 You are now readz to add your device and create a wallet
 
@@ -703,8 +695,7 @@ $ cp .env-sample ~/.config/btc-rpc-explorer.env
 $ nano ~/.config/btc-rpc-explorer.env
 ```
 
-```
-btc-rpc-explorer.env
+```btc-rpc-explorer.env
 
 BTCEXP_HOST=127.0.0.1
 BTCEXP_BITCOIND_USER=YOUR_BITCOIND_USER
@@ -719,7 +710,7 @@ BTCEXP_NO_RATES=false
 $ ~/btc-rpc-explorer$ npm start
 ```
 
-http://YOU_IP_NODE:3002/
+> Note: http://YOU_IP_NODE:3002/
 
 
 ```
@@ -727,8 +718,7 @@ $ sudo nano /etc/systemd/system/btcexplorer.service
 ```
 
 
-```
-btcexplorer.service
+``` btcexplorer.service
 
 [Unit]
 Description=BTC RPC Explorer
@@ -843,15 +833,14 @@ $ nano docker-node.conf.tpl
 Modify the three value: NODE_API_KEY, NODE_ADMIN_KEY, NODE_JWT_SECRET
 
 
-```bash
+```
 $ nano docker-explorer.conf.tpl
 ```
 
-```
-EXPLORER_INSTALL=off
-```
+> Note: EXPLORER_INSTALL=off
 
-```bash
+
+```
 $ cd ~/dojo-app/docker/my-dojo
 $ ./dojo.sh install
 ```
