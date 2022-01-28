@@ -1,5 +1,5 @@
 # Bitcoin-FullNode
-Run a BTC full node for fun and profit
+Run a BTC full node for fun
 
 
 A Huge thanks to Ministry of Nodes and his precious video tutorial. What you will find here is nothing but an updated 
