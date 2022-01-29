@@ -52,6 +52,7 @@ sudo reboot
 
 ```
 $ sudo apt install tor 
+$ sudo usermod -a -G debian-tor YOUR_USER
 ```
 
 
