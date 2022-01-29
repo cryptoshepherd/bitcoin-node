@@ -222,7 +222,7 @@ WantedBy=multi-user.target
 ```
 $ sudo systemctl enable bitcoind.service
 $ sudo systemctl start bitcoind
-$ tail -f /home/satoshi/.bitcoind/debug.log
+$ tail -f /home/satoshi/.bitcoin/debug.log
 ```
 
 _If you did not made mistakes, everything should be allright._
