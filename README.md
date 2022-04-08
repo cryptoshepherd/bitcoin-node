@@ -251,7 +251,7 @@ Ex JSON Resp of getblockchaininfo:
 
 
 
-# We can now proceed to connect our node to connect through the Tor network
+# Connect to Tor
 
 
 $ sudo apt install tor
@@ -302,9 +302,9 @@ ExecStart=/usr/local/bin/bitcoind -daemonwait -debug=tor\
 
 # bitcoin.conf changes
 
-```
-create a new python file with:
+_create a new python file with:
 
+```
 #!/usr/bin/env python3
 # Copyright (c) 2015-2021 The Bitcoin Core developers
 # Distributed under the MIT software license, see the accompanying
@@ -352,10 +352,8 @@ if __name__ == '__main__':
     main()    
 ```
 
-```
-You need to execute to execute the python scrypt in order to retrive the string you have to insert into your bitocin.conf file
 
-```
+> Note: You need to execute to execute the python scrypt in order to retrive the string you have to insert into your bitocin.conf file
 
 
 ```bitcoin.conf
@@ -438,7 +436,7 @@ addnode=gb5ypqt63du3wfhn.onion
 addnode=h2vlpudzphzqxutd.onion
 ```
 
-# Daemon reload and bitcoind service restart
+# Service Restart
 
 ```
 $ sudo systemct daemon-reload
@@ -492,9 +490,10 @@ $ cd electrs
 $ ROCKSDB_INCLUDE_DIR=/usr/local/include ROCKSDB_LIB_DIR=/usr/local/lib cargo build --locked --release
 ```
 
-```
-We need to modify one more time the bitcoind conf in order to allow electrs to indexs and do the magic by append to the bitcoin.conf
 
+> Note: We need to modify one more time the bitcoind conf in order to allow electrs to indexs and do the magic by append to the bitcoin.conf
+
+```
 # Electrs Server
 prune=0
 whitelist=download@127.0.0.1
@@ -550,11 +549,11 @@ auth="<bitcoinduser>:<bitcoindpasswd>"
 ```
 $ cd /home/<user>/electrs/target/release
 $ ./electrs --log-filters INFO --db-dir ./db --electrum-rpc-addr="127.0.0.1:50001"
-
-In case of needed you could also increase the log level to DEBUG
 ```
 
-As soon as the indexing process will be terminated:
+_In case of needed you could also increase the log level to DEBUG
+
+_As soon as the indexing process will be terminated:
 
 ```
 2021-11-03T20:00:36.068Z INFO  electrs::db] finished full compaction 
@@ -596,6 +595,8 @@ $ sudo systemctl enable electrs.service
 $ sudo systemctl start electrs.service
 ```
 
+
+
 # Expose the Electrum on Tor ( Optional )
 
 ```
@@ -615,9 +616,9 @@ $ sudo cat /var/lib/tor/electrs_hidden_service/hostname
 <your-onion-address>.onion
 ```
 
-```
-On your client machine, run the following command (assuming Tor proxy service runs on port 9050):
+_On your client machine, run the following command (assuming Tor proxy service runs on port 9050):
 
+```
 $ electrum --oneserver --server <your-onion-address>.onion:50001:t --proxy socks5:127.0.0.1:9050
 ```
 
@@ -644,20 +645,20 @@ $ sudo udevadm control --reload-rules && sudo udevadm trigger
 
 _o connect to your node, use the following string:_
 
+
 >YOUR_NODE_IP:50001:t
 
 
-You are now readz to add your device and create a wallet
+_You are now readz to add your device and create a wallet
 
 
 
 
 # Btc Rpc Explorer
 
-let's bring back txindex parameter to 1 in bitcoin.conf and restart the service.
-
-I have reason to believe that the only config change needed for Electrs was the whitelist= parameter 
-and that I did not need to set the txindex to 0, anyway since our electrs is now fully sync we do not care 
+_let's bring back txindex parameter to 1 in bitcoin.conf and restart the service.
+_I have reason to believe that the only config change needed for Electrs was the whitelist= parameter 
+_and that I did not need to set the txindex to 0, anyway since our electrs is now fully sync we do not care 
 
 ```
 $ curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
@@ -700,7 +701,6 @@ $ sudo nano /etc/systemd/system/btcexplorer.service
 
 
 ``` btcexplorer.service
-
 [Unit]
 Description=BTC RPC Explorer
 After=network.target bitcoind.service
