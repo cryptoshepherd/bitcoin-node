@@ -97,11 +97,10 @@ _Search for a line with "gpg: Good signature"_
 
 ```
 $ sudo install -m 0755 -o root -g root -t /usr/local/bin bitcoin-22.0/bin/*
+$ mkdir /home/satoshi/.bitcoin
+$ cd /home/.bitcoin
+$ nano bitcoin.conf
 ```
-
-_let it run (not needed) until you will see "2021-10-30T14:07:08Z Synchronizing blockheaders, height: 707434 (~100.00%)" and than interrupt it (CTRL-C)_
-
-
 
 # Confiure Bitcoind 
 
@@ -248,32 +247,115 @@ Ex JSON Resp of getblockchaininfo:
 "headers": 707440,
 ```
 
-> Note: When Blocks and Headers will match in number, you will be done.
+> Note: When Blocks and Headers will match in number, you will be done. You can also monitoring the process by tail the debug.log file
 
 
-> Double check you are effectivelly connected through Tor (search in log for)
+
+# We can now proceed to connect our node to connect through the Tor network
+
+
+$ sudo apt install tor
+$ sudo vim /usr/share/tor/tor-service-defaults-torrc
+
+
+```tor-service-defaults-torrc
+DataDirectory /var/lib/tor
+PidFile /run/tor/tor.pid
+RunAsDaemon 1
+User debian-tor
+
+ControlPort 9051
+ControlSocket /run/tor/control GroupWritable RelaxDirModeCheck
+ControlSocketsGroupWritable 1
+SocksPort unix:/run/tor/socks WorldWritable
+SocksPort 9050
+
+CookieAuthentication 1
+CookieAuthFileGroupReadable 1
+CookieAuthFile /run/tor/control.authcookie
+
+Log notice syslog
+```
 
 ```
-2021-11-01T16:15:30Z tor: Got service ID 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad, advertising service 4hxxlpcqzvsdd23xcgdwgvatrbzcwifvp36kvbsynkyb2mee3r5cpyad.onion:8333
+$ sudo /etc/init.d/tor restart
+$ grep User /usr/share/tor/tor-service-defaults-torrc
+$ sudo usermod -a -G debian-tor <username>
+
+Open a new terminal and exec:
+
+$ id <username>
+
+--> uid=1000(username) gid=100(users) groups=100(users),121(debian-tor)
+
 ```
 
-_Some useful Cmd:_
+# bitcoin service changes
+
+``` /etc/systemd/system/bitcoind.service
+
+ExecStart=/usr/local/bin/bitcoind -daemonwait -debug=tor\
+                            -pid=/run/bitcoind/bitcoind.pid \
+                            -conf=/home/<user>/.bitcoin/bitcoin.conf \
+                            -datadir=/home/<user>/.bitcoin
+```
+
+# bitcoin.conf changes
 
 ```
-$ bitcoin-cli getnetworkinfo
-$ bitcoin-cli getconnectioncount
-$ bitcoin-cli getpeerinfo
+create a new python file with:
+
+#!/usr/bin/env python3
+# Copyright (c) 2015-2021 The Bitcoin Core developers
+# Distributed under the MIT software license, see the accompanying
+# file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
+from argparse import ArgumentParser
+from base64 import urlsafe_b64encode
+from getpass import getpass
+from os import urandom
+
+import hmac
+
+def generate_salt(size):
+    """Create size byte hex salt"""
+    return urandom(size).hex()
+
+def generate_password():
+    """Create 32 byte b64 password"""
+    return urlsafe_b64encode(urandom(32)).decode('utf-8')
+
+def password_to_hmac(salt, password):
+    m = hmac.new(bytearray(salt, 'utf-8'), bytearray(password, 'utf-8'), 'SHA256')
+    return m.hexdigest()
+
+def main():
+    parser = ArgumentParser(description='Create login credentials for a JSON-RPC user')
+    parser.add_argument('username', help='the username for authentication')
+    parser.add_argument('password', help='leave empty to generate a random password or specify "-" to prompt for password', nargs='?')
+    args = parser.parse_args()
+
+    if not args.password:
+        args.password = generate_password()
+    elif args.password == '-':
+        args.password = getpass()
+
+    # Create 16 byte hex salt
+    salt = generate_salt(16)
+    password_hmac = password_to_hmac(salt, args.password)
+
+    print('String to be appended to bitcoin.conf:')
+    print('rpcauth={0}:{1}${2}'.format(args.username, salt, password_hmac))
+    print('Your password:\n{0}'.format(args.password))
+
+if __name__ == '__main__':
+    main()    
 ```
 
+```
+You need to execute to execute the python scrypt in order to retrive the string you have to insert into your bitocin.conf file
 
-
-# Shape your bitcoin.conf file 
-
-For a fully walk through in parameters and command used to generate the needed values, please refer to:
-
-
-[Tor Guide](https://blog.lopp.net/tor-only-bitcoin-lightning-guide/)
-[Tor Hidden Service](https://en.bitcoin.it/wiki/Setting_up_a_Tor_hidden_service)
+```
 
 
 ```bitcoin.conf
@@ -356,242 +438,120 @@ addnode=gb5ypqt63du3wfhn.onion
 addnode=h2vlpudzphzqxutd.onion
 ```
 
-
-
-
-# Install Spectre Desktop
+# Daemon reload and bitcoind service restart
 
 ```
-$ sudo apt install libusb-1.0-0-dev libudev-dev python3-dev
+$ sudo systemct daemon-reload
+$ sudo systemct restart bitcoind.service
+$ tail -f ~/.bitcoin/debug.log | grep tor
+
+You should see output like so:
+
+torcontrol thread start
+tor: Successfully connected!
+tor: Connected to Tor version 0.2.8.6
+Supported authentication method: COOKIE
+Supported authentication method: SAFECOOKIE
+Using SAFECOOKIE authentication, reading cookie authentication from /var/run/tor/control.authcookie
+SAFECOOKIE authentication challenge successful
+AUTHCHALLENGE ServerHash af7da689d08a67d5b4e789a98c76a6eacbabaa32baefc223ab0d7b1f46c3d
+Authentication successful
+ADD_ONION successful
+Got service ID w4bh4cputinlptzm, advertising service w4bh4cputinlptzm.onion:8333
+Cached service private key to /home/username/.bitcoin/onion_private_key
+AddLocal(w4bh4cputinlptzm.onion:8333,4)
 ```
 
-```
-$ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/cryptoadvance.specter-1.7.0.tar.gz
-
-$ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/SHA256SUMS
-```
-
-> we do not trust, so we verify
+_Some useful Cmd:_
 
 ```
-$ sha256sum --check SHA256SUMS-pip
-
-$ tar zxvf cryptoadvance.specter-1.7.0.tar.gz cryptoadvance.specter-1.7.0/requirements.txt
-
-$ pip3 install -r cryptoadvance.specter-1.7.0/requirements.txt --require-hashes --upgrade
-
-$ pip3 install cryptoadvance.specter-1.7.0.tar.gz
+$ bitcoin-cli getnetworkinfo
+$ bitcoin-cli getconnectioncount
+$ bitcoin-cli getpeerinfo
 ```
 
+For a fully walk through in parameters and command used to generate the needed values, please refer to:
 
 
-
-# Create a service file for Spectre
-
-> Note: Replace " * " 
-
-```
-$ cd /etc/systemd/system
-
-$ sudo nano spectre.service
-```
-
-
-
-```spectre.service
-
-[Unit]
-Description=Specter Desktop Service
-After=multi-user.target
-Conflicts=getty@tty1.service
-
-[Service]
-User="SYS_USER"
-Type=simple
-ExecStart=/usr/bin/python3 -m cryptoadvance.specter server --host 0.0.0.0
-StandardInput=tty-force
-
-[Install]
-WantedBy=multi-user.target
-```
-
-
-
-
-```
-$ sudo systemctl start spectre.service
-$ sudo systemct enable spectre.service
-$ systemctl status spectre.service
-```
-
-
-_Your Spectre instance is now available at: http://YOUR_LAN_IP:25441/_
-
-
-
-![Screenshot](spectre.png)
-
-
-
-> Set your admin (strong) password under Settings --> Authentication 
-
-
-
-> Multiple Users -- If you are going to use Spectre from different PC/Accounts ( Your family/Friends )
-> Password Protection -- If you are going to use Spectre only from the Bitcoin Node Instance
-
-
-
-
-# Connect Your Device to Spectre (Trezor/Ledger)
-
-_For convinience, we want to connect to Spectre instance remotely but having our hardwere wallet phisically linked to our laptop/pc (We want to use our Spectre from anywhere)_
-
-
-_If you are going to link your device to Spectre from a Linux machine, we need to set a few things up._
-
-[Spectre udev](https://github.com/cryptoadvance/specter-desktop/tree/master/udev)
-
-
-```
-$ git clone https://github.com/cryptoadvance/specter-desktop.git
-$ cd spectre-desktop
-$ sudo cp udev/*.rules /etc/udev/rules.d/
-$ sudo udevadm trigger
-$ sudo udevadm control --reload-rules
-$ sudo groupadd plugdev
-$ sudo usermod -aG plugdev `whoami`
-```
-
-
-
-
-# Install and run Spectre locally (hwibridge mode)
-
-
-> if you are doing this on Ubutu please remember to install the prereqs (sudo apt install libusb-1.0-0-dev libudev-dev python3-dev)
-
-
-
-```
-$ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/cryptoadvance.specter-1.7.0.tar.gz
-
-$ wget https://github.com/cryptoadvance/specter-desktop/releases/download/v1.7.0/SHA256SUMS
-```
-
-
-
-```
-$ sha256sum --check SHA256SUMS-pip
-
-$ tar zxvf cryptoadvance.specter-1.7.0.tar.gz cryptoadvance.specter-1.7.0/requirements.txt
-
-$ pip3 install -r cryptoadvance.specter-1.7.0/requirements.txt --require-hashes --upgrade
-
-$ pip3 install cryptoadvance.specter-1.7.0.tar.gz
-```
-
-
-[AppImage](https://github.com/cryptoadvance/specter-desktop/releases)
-
-
-```
-$ sudo pacman -S appimagelauncher
-```
-
-[Spectre Video](https://www.youtube.com/watch?v=rUOxjyOGOGw)
-
-
-![Screenshot](spectre_local.png)
-
-
-1. You need to configure the desktop app to cummunicate with your Bitcoin node. user and password are the ones you already set in your bitcoin.conf file:
-
-
-```
-rpcuser=YOUR_USER_HERE
-rpcpassword=YOUR_PASSWD_HERE
-```
-
-> Host: http://YOU_REMOTE_IP_NODE 
-> Port: 8332
-
-
-![Screenshot](spectre_local.png)
-
-
-2. USB configuration, double check that all the HWI bridges are in place
-
-
-![Screenshot](hwi_bridge.png)
-
-
-3. You are now able to add yout harware wallet first and create than your wallet (For Trezor, as far as i know, it's better go for the Nested instead Segwit)
-
-
-
-
-# (OPTIONAL but RECCOMMENDED) enable HTTPS for your Spectre Node instance
-
-
-```
-$ cd /home/satoshi/.specter
-$ openssl req -newkey rsa:2048 -nodes -keyout key.pem -x509 -days 3650 -out certificate.pem
-$ sudo nano /etc/systemd/system/spectre.service
-```
-
-_modify in:_
-
-```
-ExecStart=/usr/bin/python3 -m cryptoadvance.specter server --host 0.0.0.0 --cert=/home/satoshi/.specter/cert.pem --key=/home/satoshi/.specter/key.pem
-```
-
-```
-$ sudo systemctl daemon-reload
-$ sudo systemctl restart spectre.service && tail -f specter.log
-```
-
-_Verify the following:_
-
-```
-[2021-11-03 15:45:02,641] INFO in _internal:  * Running on https://0.0.0.0:25441/ (Press CTRL+C to quit)
-```
-
-
+[Tor Guide](https://blog.lopp.net/tor-only-bitcoin-lightning-guide/)
+[Tor Hidden Service](https://en.bitcoin.it/wiki/Setting_up_a_Tor_hidden_service)
 
 
 # Install Electrum server
 
 
 ```
-$ sudo apt install clang cmake build-essential cargo
+$ sudo apt install clang cmake build-essential librocksdb-dev
+$ sudo apt install -y libgflags-dev libsnappy-dev zlib1g-dev libbz2-dev liblz4-dev libzstd-dev
+$ git clone -b v6.11.4 --depth 1 https://github.com/facebook/rocksdb && cd rocksdb
+$ make shared_lib -j $(nproc) && sudo make install-shared
+$ cd .. && rm -r rocksdb
+
 $ git clone https://github.com/romanz/electrs
 $ cd electrs
-$ cargo build --locked --release
-$ cp /home/satoshi/electrs/doc/config_example.toml /home/satoshi/electrs/electrs.toml
+$ ROCKSDB_INCLUDE_DIR=/usr/local/include ROCKSDB_LIB_DIR=/usr/local/lib cargo build --locked --release
 ```
 
-
-> Note: For the Index Sync I had a few issue, I had to change a few things. 
-
-
 ```
-# Electrs (Not Necessary)
-txindex=0
-# txindex=1 (OLD)
+We need to modify one more time the bitcoind conf in order to allow electrs to indexs and do the magic by append to the bitcoin.conf
 
-# Electrs
+# Electrs Server
 prune=0
-```
-
-# Electrs (Needed to avaoid problems during Index process, due to the maxuploadtarget parameters set
-
-```
 whitelist=download@127.0.0.1
+
+$ sudo systemctl restart bitcoind.service
+
+Now it's time to create the electrs toml file. Guys do not blame on me but I had several problem during the service start due to the missing
+configuration file. Actually I have the same file in two different paths, do the same or take the time I did not and experiment by yourself 
+which is the right path 
+
+/home/<user>/electrs/target/release/electrs.toml
+/home/<user>/electrs/electrs.toml
 ```
 
+```electrs.toml
+# DO NOT EDIT THIS FILE DIRECTLY - COPY IT FIRST!
+# If you edit this, you will cry a lot during update and will not want to live anymore!
+
+# This is an EXAMPLE of how configuration file should look like.
+# Do NOT blindly copy this and expect it to work for you!
+# If you don't know what you're doing consider using automated setup or ask an experienced friend.
+
+# This example contains only the most important settings.
+# See docs or electrs man page for advanced settings.
+
+# File where bitcoind stores the cookie, usually file .cookie in its datadir
+#cookie_file = "/var/run/bitcoin-mainnet/cookie"
+
+# The listening RPC address of bitcoind, port is usually 8332
+daemon_rpc_addr = "127.0.0.1:8332"
+
+# The listening P2P address of bitcoind, port is usually 8333
+daemon_p2p_addr = "127.0.0.1:8333"
+
+# Directory where the index should be stored. It should have at least 70GB of free space.
+db_dir = "/home/<user>/electrs/target/release/db"
+
+# bitcoin means mainnet. Don't set to anything else unless you're a developer.
+network = "bitcoin"
+
+# The address on which electrs should listen. Warning: 0.0.0.0 is probably a bad idea!
+# Tunneling is the recommended way to access electrs remotely.
+electrum_rpc_addr = "127.0.0.1:50001"
+
+# How much information about internal workings should electrs print. Increase before reporting a bug.
+log_filters = "INFO"
+
+auth="<bitcoinduser>:<bitcoindpasswd>"
 ```
-$ /home/satoshi/electrs/target/release/electrs -v --timestamp
+
+# First electrs execution and indexing
+
+```
+$ cd /home/<user>/electrs/target/release
+$ ./electrs --log-filters INFO --db-dir ./db --electrum-rpc-addr="127.0.0.1:50001"
+
+In case of needed you could also increase the log level to DEBUG
 ```
 
 As soon as the indexing process will be terminated:
@@ -601,9 +561,7 @@ As soon as the indexing process will be terminated:
 ```
 
 
-
 # Run Electrs as a service
-
 
 ```
 $ sudo nano /etc/systemd/system/electrs.service
@@ -619,10 +577,10 @@ Description=Electrs
 After=bitcoind.service
 
 [Service]
-WorkingDirectory=/home/YOUR_HOME/electrs
-ExecStart=/home/YOUR_HOME/electrs/target/release/electrs
-User=YOUR_SYS_USER
-Group=YOUR_SYS_USER_GRP
+WorkingDirectory=/home/<user>/electrs
+ExecStart=/home/<user>/electrs/target/release/electrs --index-batch-size=10 --electrum-rpc-addr="127.0.0.1:50001"
+User=<user>
+Group=<group>
 Type=simple
 KillMode=process
 TimeoutSec=60
@@ -633,17 +591,39 @@ RestartSec=60
 WantedBy=multi-user.target
 ```
 
-
-
-
 ```
 $ sudo systemctl enable electrs.service
 $ sudo systemctl start electrs.service
 ```
 
-> Note: if you want to expone your Electrum on the Tor nework follow the following 
+# Expose the Electrum on Tor ( Optional )
 
-[electrs tor](https://github.com/romanz/electrs/blob/master/doc/config.md#tor-hidden-service)
+```
+$ sudo nano /etc/tor/torrc
+```
+
+```
+HiddenServiceDir /var/lib/tor/electrs_hidden_service/
+HiddenServiceVersion 3
+HiddenServicePort 50001 127.0.0.1:50001
+```
+
+```
+$ sudo systemctl restart tor
+$ sudo cat /var/lib/tor/electrs_hidden_service/hostname
+
+<your-onion-address>.onion
+```
+
+```
+On your client machine, run the following command (assuming Tor proxy service runs on port 9050):
+
+$ electrum --oneserver --server <your-onion-address>.onion:50001:t --proxy socks5:127.0.0.1:9050
+```
+
+For more details:
+
+[See](http://docs.electrum.org/en/latest/tor.html)
 
 
 
@@ -674,8 +654,6 @@ You are now readz to add your device and create a wallet
 
 # Btc Rpc Explorer
 
-
-
 let's bring back txindex parameter to 1 in bitcoin.conf and restart the service.
 
 I have reason to believe that the only config change needed for Electrs was the whitelist= parameter 
@@ -695,7 +673,6 @@ $ nano ~/.config/btc-rpc-explorer.env
 ```
 
 ```btc-rpc-explorer.env
-
 BTCEXP_HOST=127.0.0.1
 BTCEXP_BITCOIND_USER=YOUR_BITCOIND_USER
 BTCEXP_BITCOIND_PASS=YOUR_BITCOIND_PASSWORD
@@ -706,7 +683,12 @@ BTCEXP_NO_RATES=false
 ```
 
 ```
-$ ~/btc-rpc-explorer$ npm start
+$ cd ~/btc-rpc-explorer
+$ nano config.json
+
+--> {}
+
+$ npm start
 ```
 
 > http://YOU_IP_NODE:3002/
@@ -745,208 +727,17 @@ $ sudo systemct enable /etc/systemd/system/btcexplorer.service
 $ sudo systemctl start btcexplorer.service
 ```
 
-
-
-
-# Samurai Wallet, Dojo, Whirpool
-
-```
-$ sudo apt-get install ca-certificates curl gnupg lsb-release
-
-$  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-
-$ echo \
-  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
-  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-
-$ sudo apt-get update
-$ sudo apt-get install docker-ce docker-ce-cli containerd.io
-
-$ sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-$ sudo chmod +x /usr/local/bin/docker-compose
-
-$ sudo systemctl enable docker
-$ sudo systemct start docker
-```
-
-
-
-# Dojo Configuration
-
-```
-$ sudo usermod -aG docker YOUR_USER
-$ sudo systemctl stop docker
-$ sudo mkdir /home/YOUR_USER/docker
-$ sudo su - root
-
-# echo '{ "data-root": "/home/YOUR_USER/docker" }' > /etc/docker/daemon.json
-# exit
-```
-
-```
-# Create the directory for housing our MyDojo files
-$ mkdir ~/dojo-app
-
-# Download latest MyDojo files
-$ wget https://code.samourai.io/dojo/samourai-dojo/-/archive/master/samourai-dojo-master.zip
-
-# Unzip the Files
-$ unzip master.zip -d .
-
-# Copy the files to our dojo-app directory
-$ cp -a samourai-dojo-master/. dojo-app/
-
-# Delete the source archive now that we have copied the files to our directory.
-$ rm -rf samourai-dojo-master
-$ rm master.zip
-```
-
-
-```
-$ cd ~/dojo-app/docker/my-dojo/conf
-$ nano docker-bitcoind.conf.tpl
-```
-
-``` docker-bitcoind.conf.tpl 
-BITCOIND_RPC_USER=YOUR_BITCOIND_USER
-BITCOIND_RPC_PASSWORD=YOUR_BITCOIND_PASSWD
-BITCOIND_INSTALL=off
-BITCOIND_IP=YOUR_LAN_IP
-BITCOIND_RPC_PORT=8332
-BITCOIND_ZMQ_RAWTXS=28333
-BITCOIND_ZMQ_BLK_HASH=28334
-```
-
-
-```
-$ nano docker-mysql.conf.tpl
-```
-
-> Note: Change root and user passwd. Choose a strong one
-
-
-```
-$ nano docker-node.conf.tpl
-```
-
-Modify the three value: 
-
-```
-NODE_API_KEY, NODE_ADMIN_KEY, NODE_JWT_SECRET
-```
-
-```
-$ nano docker-explorer.conf.tpl
-```
-
-> EXPLORER_INSTALL=off
-
-
-```
-$ cd ~/dojo-app/docker/my-dojo
-$ ./dojo.sh install
-```
-
-
-# Samurai Wallet Pairing
-
-while you are waiting for the dojo ti finish the aligment process, we can first install and pair the samurai wallet with our dojo instace
-as well install and configure the Whirpool CLI. 
-
-1. Pair the wallet with your dojo instance: https://www.youtube.com/watch?v=5ZzCEs9qJo4&list=PLCRbH-IWlcW290O0N0lQV6efxuCA5Ja8c&index=10
-
-2. Create your wallet
-
-```
-$ java
-```
-
-```bash
-$ sudo apt install openjdk-17-jre-headles
-$ mkdir ~/whirpool
-$ cd ~/whirpool
-$ wget https://code.samourai.io/whirlpool/whirlpool-client-cli/uploads/21d25ed02cceb91f4aa95b6389b9da9c/whirlpool-client-cli-
-{{LAST_VERSION}}-run.jar
-```
-_The Video explain how to retrive the payload from the samurai wallet_
-
-4. You will be asked for the passphrase you've already set, type it ans wait for:
-
-> STARTED
-
-5. CTRL-C
-
-
-```
-$ sudo nano /etc/systemd/system/whirpool.service
-```
-
-``` whirpool.service 
-
-[Unit]
-Description=Whirpool CLI
-After=tor.service
-
-[Service]
-WorkingDirectory=/home/YOUR_HOME/whirpool
-ExecStart=/usr/bin/java -jar whirlpool-client-cli-0.10.11-run.jar --server=mainnet --tor --auto-mix --mixs-target=0 --listen
-User=YOUR_USER
-Group=YOUR_GROUP
-Type=simple
-KillMode=process
-TimeoutSec=60
-Restart=always
-RestartSec=60
-
-[Install]
-WantedBy=multi-user.target
-```
-
-
-```bash
-$ sudo systemctl enable /etc/systemd/system/whirpool.service
-$ sudo systemctl start whirpool.service
-$ sudo systemctl status whirpool.service
-```
-
-```
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
- ⣿ AUTHENTICATION REQUIRED
-⣿ Whirlpool wallet is CLOSED.
-⣿ Please start GUI to authenticate and start mixing.
-⣿ Or authenticate with --authenticate
-⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-```
-
-
-
-# Whirpool GUI 
-
-![Screenshot](setup1.png)
-
-_The Key requested is in whirlpool-cli-config.properties file, under whirpool folder, 
-which has been automatically created at first whirpool run_
-
-![Screenshot](setup2.png)
-
-![Screenshot](setup3.png)
-
-> Note: GUI -- Whirpool CLI -- Dojo -- Wallet are now working in synergy
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Note: Consider to always connect yout Electrum, Wasabi, Ledger and Trezor wallet to your own BTC node. Expose your server on 
+      Tor will makes your server reachable from whereever you are.
+
+A few Resources which will help you to setup HW Wallet as well wasabi and/or ledger
+
+
+[1](https://support.ledger.com/hc/en-us/articles/360017551659-Setting-up-your-Bitcoin-full-node?docs=true)
+[2](https://armantheparman.com/connect-electrum-desktop-wallet-to-your-bitcoin-node/)
+[3](https://blog.trezor.io/connecting-your-wallet-to-a-full-node-edf56693b545)
+[4](https://blog.lopp.net/how-to-run-bitcoin-as-a-tor-hidden-service-on-ubuntu/)
+[5](https://bitnodes.io/)
+[6](https://armantheparman.com/tor/)
+[7](https://mynodebtc.github.io/tor/electrum.html)
+[8](https://github.com/romanz/electrs/blob/master/doc/config.md#tor-hidden-service)
