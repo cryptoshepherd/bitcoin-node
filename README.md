@@ -643,14 +643,34 @@ $ sudo cp contrib/udev/*.rules /etc/udev/rules.d/
 $ sudo udevadm control --reload-rules && sudo udevadm trigger
 ```
 
-_o connect to your node, use the following string:_
+> Note: We do not, I repeat, we do not want to connect our wallet at first run to a public node. In order to tune electrum to connect to our node, we will need to let Electrum wallet generate a config file first, so consider the first wallet creation a temporary wallet which will be deleted
+
+_after you have created your temporary wallet, a config file will be created under /<home/your_home>/.electrum/config we need to customize it as follow
 
 
->YOUR_NODE_IP:50001:t
+```
+{
+    "auto_connect": false,
+    "blockchain_preferred_block": {
+        "hash": "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f",
+        "height": 0
+    },
+    "config_version": 3,
+    "oneserver": true,
+    "rpcpassword": "LEAVE_WHAT_YOU_HAVE",
+    "rpcuser": "user",
+    "server": "HERE:50001:t"
+}
+```
+
+_auto_connect, oneserver and server needs to be change, leave all the rest as it is. server needs to be your xxx.orion followed by :50001:t
+
+_remember to configure electrum to use the Tor proxy (127.0.0.1 9050), Electrum will refresh and automatically connect to your node via Tor
 
 
-_You are now readz to add your device and create a wallet
+# Wasabi Wallet
 
+Just visit the settings to configure wasabi to connect to your onion address, port 8333 via Tor 
 
 
 
@@ -733,6 +753,34 @@ Note: Consider to always connect yout Electrum, Wasabi, Ledger and Trezor wallet
 A few Resources which will help you to setup HW Wallet as well wasabi and/or ledger
 
 
+# Security Consideration
+
+Consider to configure a Killswitch mechanism which will allow only the necessary service, and will block in and outin case your VPN connection 
+will drop. https://github.com/cryptoshepherd/vpn-killswitch/blob/master/enableKillSwitch.sh
+
+# Configure OpenVPN to automatically connect at boot
+
+_Download your ovpn files from your VPN provider 
+
+```
+$ mv your-ovpn-file.ovpn your-ovpn-file.conf && sudo mv your-ovpn-file.conf /etc/openvpn
+
+if your configuration does not includes user and passwd, add to the conf:
+
+--> auth-user-pass /etc/openvpn/passwd
+
+$ sudo vi /etc/openvpnpasswd
+
+--> on two lines:
+
+user
+passwd
+
+$ sudo systemctl enable openvpn@connection-name (ex openvpn@ch-vpn.service)
+
+```
+
+
 [1](https://support.ledger.com/hc/en-us/articles/360017551659-Setting-up-your-Bitcoin-full-node?docs=true)
 [2](https://armantheparman.com/connect-electrum-desktop-wallet-to-your-bitcoin-node/)
 [3](https://blog.trezor.io/connecting-your-wallet-to-a-full-node-edf56693b545)
@@ -741,3 +789,5 @@ A few Resources which will help you to setup HW Wallet as well wasabi and/or led
 [6](https://armantheparman.com/tor/)
 [7](https://mynodebtc.github.io/tor/electrum.html)
 [8](https://github.com/romanz/electrs/blob/master/doc/config.md#tor-hidden-service)
+
+
